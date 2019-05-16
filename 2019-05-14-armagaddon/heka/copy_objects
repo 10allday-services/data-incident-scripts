@@ -1,0 +1,10 @@
+#!/usr/bin/bash
+# https://docs.aws.amazon.com/cli/latest/topic/return-codes.html
+mkdir -p logs
+for file in filtered_time/* ; do
+  echo $file
+  cat $file |
+  sed 's/  */ /g' |
+  cut -d' ' -f4 |
+  xargs -I{} -P32 -n1 sh -c 'echo aws s3 cp s3://net-mozaws-prod-us-west-2-pipeline-data/{} s3://net-mozaws-prod-us-west-2-pipeline-data-test/{} || exit 255' &> logs/$(basename ${file}).log
+done

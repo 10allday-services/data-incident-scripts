@@ -1,0 +1,36 @@
+#!/usr/bin/python
+# filter to files within the affected time period
+# includes files on the boundaries
+import os
+import sys
+from dateutil import parser
+
+start = int(os.environ["START"])
+end_edge = int(os.environ["END_EDGE"])
+end_landfill = int(os.environ["END_EDGE_LANDFILL"])
+
+fname = sys.argv[1]
+
+
+# parse timestamp from aws listing mtime (landfill)
+def parse_prefix(line):
+    return int(parser.parse(" ".join(line.split(' ')[0:2])).strftime('%s'))
+
+
+# parse timestamp from filename
+def parse_fname(line):
+    return int(line.rstrip().split('/')[-1].split('_')[0])
+
+
+with open(fname, 'r') as f:
+    end = end_edge
+    ts = parse_fname
+    if "landfill" in fname:
+        # use 15min boundary for landfill objects
+        end = end_landfill
+        ts = parse_prefix
+
+    for line in f:
+        i = ts(line)
+        if i >= start and i <= end:
+            sys.stdout.write(line)

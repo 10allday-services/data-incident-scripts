@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "dimensions": [
+    { "field_name": "endpoint",   "allowed_values": ["generic-incoming.telemetry.mozilla.org_other"]},
+    { "field_name": "date",       "allowed_values": ["FIXME"]}
+  ]
+}

@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# generate deletion candidate prefixes
+# TODO confirm with mreid that telemetry-anonymous-parquet is mobile-only
+
+bucket=s3://net-mozaws-prod-us-west-2-pipeline-data
+
+# ignore: structured ingestion
+# coverage-coverage-parquet \
+# eng-workflow-build-parquet \
+# eng-workflow-hgpush-parquet \
+# firefox-launcher-process-launcher-process-failure-parquet \
+# pocket-fire-tv-events-parquet \
+# webpagetest-webpagetest-run-parquet
+
+# ignore: explicitly called out as pre-telemetry
+# firefox-installer-install-parquet \
+
+# ignore: mobile
+# glean-baseline-parquet \
+# org-mozilla-fenix-activation-parquet \
+# org-mozilla-fenix-baseline-parquet \
+# org-mozilla-fenix-events-parquet \
+# org-mozilla-fenix-metrics-parquet \
+# org-mozilla-reference-browser-baseline-parquet \
+# org-mozilla-reference-browser-events-parquet \
+# telemetry-core-parquet \
+# telemetry-focus-event-parquet \
+# telemetry-mobile-event-parquet \
+# telemetry-anonymous-parquet \
+
+# ignore: aggregates
+# error_aggregates
+# telemetry-payload-size-2 \
+# telemetry-payload-size-parquet \
+
+# ignore: not telemetry
+# sslreports-2 \
+# sslreports \
+
+# ignore: old dataset
+# telemetry-ip-privacy-parquet \
+
+for dataset in  \
+landfill-3 \
+moz-ingest-uri-errors-parquet  \
+telemetry-3 \
+telemetry-cohorts \
+telemetry-downgrade-parquet \
+telemetry-duplicates-parquet \
+telemetry-errors-3 \
+telemetry-errors-parquet \
+telemetry-experiments-2 \
+telemetry-experiments \
+telemetry-frecency-update-parquet \
+telemetry-health-parquet \
+telemetry-heartbeat-parquet \
+telemetry-landfill-errors-parquet \
+telemetry-modules-parquet \
+telemetry-new-profile-parquet \
+telemetry-pre-account-parquet \
+telemetry-sample-2 \
+telemetry-shield-study-addon-parquet \
+telemetry-shield-study-error-parquet \
+telemetry-shield-study-parquet \
+telemetry-testpilot-parquet \
+telemetry-untrustedModules-parquet \
+telemetry-update-parquet \
+telemetry-webrtc-2 \
+telemetry-webrtc ; do
+  if [[ $dataset =~ .*parquet$ ]] || [[ $dataset == error_aggregates ]]; then
+    # echo $dataset is parquet
+    versions="$(aws s3 ls net-mozaws-prod-us-west-2-pipeline-data/$dataset/v|grep PRE|sed 's/  */ /g'|cut -d ' ' -f3)"
+    # echo table versions are $versions
+    for version in $versions ; do
+      prefixes=$(aws s3 ls net-mozaws-prod-us-west-2-pipeline-data/$dataset/${version}| grep -F -f ./dates |grep PRE|sed 's/  */ /g'|cut -d ' ' -f3)
+      if ! [[ -z "$prefixes" ]]; then
+        for prefix in $prefixes ; do
+          echo net-mozaws-prod-us-west-2-pipeline-data/$dataset/${version}$prefix
+        done
+      fi
+    done
+  elif [[ $dataset == landfill-3 ]] ; then
+    # echo $dataset is landfill
+    # prefixes=$(aws s3 ls net-mozaws-prod-us-west-2-pipeline-data/$dataset/ |grep PRE|sed 's/  */ /g'|cut -d ' ' -f3)
+    # only telemetry landfill, pioneer, data.m.c are unaffected
+    # structured ingestion is handled separately
+    prefixes="incoming.telemetry.mozilla.org incoming.telemetry.mozilla.org_other"
+    for prefix in $prefixes ; do
+      prefixes2=$(aws s3 ls net-mozaws-prod-us-west-2-pipeline-data/$dataset/${prefix}/ | grep -F -f ./dates |grep PRE|sed 's/  */ /g'|cut -d ' ' -f3)
+      for prefix2 in $prefixes2 ; do
+        echo net-mozaws-prod-us-west-2-pipeline-data/$dataset/${prefix}/${prefix2}
+      done
+    done
+  else
+    # echo $dataset is heka-protobuf
+    prefixes=$(aws s3 ls net-mozaws-prod-us-west-2-pipeline-data/$dataset/ | grep -F -f ./dates |grep PRE|sed 's/  */ /g'|cut -d ' ' -f3)
+    for prefix in $prefixes ; do
+      echo net-mozaws-prod-us-west-2-pipeline-data/$dataset/$prefix
+    done
+  fi
+done

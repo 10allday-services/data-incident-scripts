@@ -1,0 +1,32 @@
+-- -*- lua -*-
+filename = "moz_telemetry_s3.lua"
+
+-- match data outside the affected period or data that isn't activity-stream
+message_matcher = "Timestamp < 1556967600000000000 || Timestamp > 1557572400000000000 || (Fields[uri] !~ '/submit/activity%-stream')"
+
+-- see the specification above
+dimension_file  = "/media/ephemeral0/hindsight/schema.telemetry.json"
+batch_dir = '/media/ephemeral0/split_out/FIXME'
+
+-- Specifies how many data files to keep open at once. If there are more
+-- "current" files than this, the least-recently used file will be closed
+-- and then re-opened if more messages arrive before it is copied to S3. The
+-- default is 1000. A value of 0 means no maximum.
+max_file_handles    = 0
+
+-- Specifies how much data (in bytes) can be written to a single file before
+-- it is copied to s3 (default 500MB)
+max_file_size = 1073741824
+
+-- Specifies how long (in seconds) to wait before it is copied to s3
+-- (default 1 hour).  Idle files are only checked every ticker_interval seconds.
+max_file_age        = 3600
+
+-- Specifies that all local files will be copied S3 before exiting (default false).
+flush_on_shutdown = true
+preserve_data       = not flush_on_shutdown -- should always be the inverse of flush_on_shutdown
+
+ticker_interval     = 60
+
+compression = nil
+memory_limit = 0

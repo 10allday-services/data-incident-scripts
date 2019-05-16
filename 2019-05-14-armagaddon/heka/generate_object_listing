@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# generate object listings from candidate prefixes
+mkdir -p listing
+while read line ; do
+  aws s3 ls --recursive $line > listing/$(echo $line | sed 's/[/=]/_/g')
+done

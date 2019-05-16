@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+export TZ=UTC
+start=$(date -d'04 MAY 2019 11AM' +%s)
+end=$(date -d'11 MAY 2019 11AM' +%s)
+start_edge=$(date -d'04 MAY 2019 12PM' +%s)
+end_edge=$(date -d'11 MAY 2019 12PM' +%s)
+start_edge_landfill=$(date -d'04 MAY 2019 11:15AM' +%s)
+end_edge_landfill=$(date -d'11 MAY 2019 11:15AM' +%s)
+echo "start: $start"
+echo "end: $end"
+echo "start edge (first hour): $start_edge"
+echo "end edge (hour after): $end_edge"
+echo "start edge landfill (first 15min): ${start_edge_landfill}"
+echo "end edge landfill (first 15min after): ${end_edge_landfill}"
+
+export START=${start}
+export END=${end}
+export START_EDGE=${start_edge}
+export START_EDGE_LANDFILL=${start_edge_landfill}
+export END_EDGE=${end_edge}
+export END_EDGE_LANDFILL=${end_edge_landfill}

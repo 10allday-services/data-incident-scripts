@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Generate strings matching the submission date field in object prefixes.
+# This ended up not being necessary since all data in the prod bucket uses
+# YYYYMMDD-style dates except legacy datasets that aren't being updated.
+truncate -s0 dates
+for date in $(seq 20190504 20190511) ; do
+  date2=$(echo $date | ruby -e 'require "date"; puts(Date.parse(STDIN.gets().chomp()).strftime())')
+  echo $date
+  echo $date2
+done
