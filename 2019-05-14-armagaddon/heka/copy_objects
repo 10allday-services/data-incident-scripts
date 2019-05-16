@@ -1,4 +1,6 @@
 #!/usr/bin/bash
+# NOTE: this script was replaced by faster-copy but is retained for historical
+# purposes
 # https://docs.aws.amazon.com/cli/latest/topic/return-codes.html
 mkdir -p logs
 for file in filtered_time/* ; do
