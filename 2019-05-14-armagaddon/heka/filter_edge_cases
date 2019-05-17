@@ -1,0 +1,40 @@
+#!/usr/bin/python
+# filter to edge cases i.e. files with data potentially both within and without
+# the affected period
+import os
+import sys
+from dateutil import parser
+
+start = int(os.environ["START"])
+start_edge = int(os.environ["START_EDGE"])
+start_landfill = int(os.environ["START_EDGE_LANDFILL"])
+end = int(os.environ["END"])
+end_edge = int(os.environ["END_EDGE"])
+end_landfill = int(os.environ["END_EDGE_LANDFILL"])
+
+fname = sys.argv[1]
+
+
+# parse timestamp from aws listing mtime (landfill)
+def parse_prefix(line):
+    return int(parser.parse(" ".join(line.split(' ')[0:2])).strftime('%s'))
+
+
+# parse timestamp from filename
+def parse_fname(line):
+    return int(line.rstrip().split('/')[-1].split('_')[0])
+
+
+with open(fname, 'r') as f:
+    end_edge = end_edge
+    start_edge = start_edge
+    ts = parse_fname
+    # use 15min boundary for landfill objects
+    if "landfill" in fname:
+        end_edge = end_landfill
+        start_edge = start_landfill
+        ts = parse_prefix
+    for line in f:
+        i = ts(line)
+        if (start <= i <= start_edge) or (end <= i <= end_edge):
+            sys.stdout.write(line)

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# filter to only objects with appName=Firefox
+# protobuf-only where we have appName in dimensions
+if [[ $1 =~ telemetry-(3|errors-3|sample) ]] ; then
+  cat $1 | grep /Firefox/
+else
+  cat $1
+fi
